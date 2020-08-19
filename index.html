@@ -152,6 +152,88 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-ControllerAdvice注解的作用" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/08/19/ControllerAdvice%E6%B3%A8%E8%A7%A3%E7%9A%84%E4%BD%9C%E7%94%A8/">@ControllerAdvice注解的作用</a>
+    </h1>
+  
+
+        
+        <a href="/2020/08/19/ControllerAdvice%E6%B3%A8%E8%A7%A3%E7%9A%84%E4%BD%9C%E7%94%A8/" class="archive-article-date">
+  	<time datetime="2020-08-19T07:04:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-19</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一、-ControllerAdvice就是增强版的-Controller"><a href="#一、-ControllerAdvice就是增强版的-Controller" class="headerlink" title="一、@ControllerAdvice就是增强版的@Controller"></a>一、@ControllerAdvice就是增强版的@Controller</h1><p>@ControllerAdvice可以实现三个方面的功能：</p>
+<ol>
+<li>全局异常处理</li>
+<li>全局数据绑定</li>
+<li>全局数据预处理</li>
+</ol>
+<p>灵活使用这三个功能，可以简化很多很多工作，但是需要注意的是，这是SpringMVC提供的功能，在Spring Boot中可以直接使用。</p>
+<h1 id="二、全局异常处理"><a href="#二、全局异常处理" class="headerlink" title="二、全局异常处理"></a>二、全局异常处理</h1><p>​    使用@ControllerAdvice实现全局异常处理。只需要定义类，添加该注解即可定义，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.ControllerAdvice;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.ExceptionHandler;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.ModelAndView;</span><br><span class="line"></span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyGlobalExceptionHandler</span> </span>&#123;</span><br><span class="line">  <span class="meta">@ExceptionHandler(Exception.class)</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> ModelAndView <span class="title">customException</span><span class="params">(Exception e)</span> </span>&#123;</span><br><span class="line">   ModelAndView mv = <span class="keyword">new</span> ModelAndView();</span><br><span class="line">    mv.addObject(<span class="string">&quot;message&quot;</span>, e.getMessage());</span><br><span class="line">    mv.setViewName(<span class="string">&quot;myerror&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> mv;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在该类中，可以定义多个方法，不同的方法处理不同的异常，例如专门处理空指针的方法、专门处理数组越界的方法…，也可以直接向上面代码一样，在一个方法中处理所有的异常信息。</p>
+<p>@ExceptionHandler 注解用来指明异常的处理类型，即如果这里指定为 NullpointerException，则数组越界异常就不会进到这个方法中来。</p>
+<h1 id="三、全局数据绑定"><a href="#三、全局数据绑定" class="headerlink" title="三、全局数据绑定"></a>三、全局数据绑定</h1><p>全局数据绑定功能可以用来做一些初始化的数据操作，我们可以将一些公共的数据定义在添加了 @ControllerAdvice 注解的类中，这样，在每一个 Controller 的接口中，就都能够访问导致这些数据。</p>
+<p>使用步骤，首先定义全局数据，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyGlobalExceptionHandler</span> </span>&#123;</span><br><span class="line">    <span class="meta">@ModelAttribute(name = &quot;md&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Map&lt;String,Object&gt; <span class="title">mydata</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        HashMap&lt;String, Object&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        map.put(<span class="string">&quot;age&quot;</span>, <span class="number">99</span>);</span><br><span class="line">        map.put(<span class="string">&quot;gender&quot;</span>, <span class="string">&quot;男&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> map;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 @ModelAttribute 注解标记该方法的返回数据是一个全局数据，默认情况下，这个全局数据的 key 就是返回的变量名，value 就是方法返回值，当然开发者可以通过 @ModelAttribute 注解的 name 属性去重新指定 key。</p>
+<p>定义完成后，在任何一个Controller 的接口中，都可以获取到这里定义的数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.ui.Model;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.GetMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloController</span> </span>&#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/hello&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(Model model)</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Object&gt; map = model.asMap();</span><br><span class="line">        System.out.println(map);</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">1</span> / <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;hello controller advice&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/08/19/ControllerAdvice%E6%B3%A8%E8%A7%A3%E7%9A%84%E4%BD%9C%E7%94%A8/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-第一篇博客" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
